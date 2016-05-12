@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import {
+  DeviceEventEmitter,
   NativeAppEventEmitter,
   NativeModules,
   Platform,
@@ -141,7 +142,9 @@ export default class Camera extends Component {
   }
 
   async componentWillMount() {
-    this.cameraBarCodeReadListener = NativeAppEventEmitter.addListener('CameraBarCodeRead', this._onBarCodeRead);
+    this.cameraBarCodeReadListener = Platform.OS === 'ios'
+          ? NativeAppEventEmitter.addListener('CameraBarCodeRead', this.props.onBarCodeRead)
+          : DeviceEventEmitter.addListener('CameraBarCodeRead', this.props.onBarCodeRead);
 
     let { captureMode } = convertNativeProps({captureMode: this.props.captureMode})
     let hasVideoAndAudio = this.props.captureAudio && captureMode === Camera.constants.CaptureMode.video
