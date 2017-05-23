@@ -7,7 +7,6 @@ import {
   StyleSheet,
   requireNativeComponent,
   View,
-  ViewPropTypes
 } from 'react-native';
 
 const CameraManager = NativeModules.CameraManager || NativeModules.CameraModule;
@@ -72,7 +71,7 @@ export default class Camera extends Component {
   };
 
   static propTypes = {
-    ...ViewPropTypes,
+    ...View.PropTypes,
     aspect: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number
