@@ -130,12 +130,22 @@ class RCTCameraViewFinder extends TextureView implements TextureView.SurfaceText
         }
     }
 
+    private static Camera.Parameters getCameraParameters(Camera camera) {
+        try {
+            return camera != null ? camera.getParameters() : null;
+        }
+        catch (RuntimeException e) {
+            // The camera has been released
+            return null;
+        }
+    }
+
     synchronized private void startCamera() {
         if (!_isStarting) {
             _isStarting = true;
             try {
                 _camera = RCTCamera.getInstance().acquireCameraInstance(_cameraType);
-                Camera.Parameters parameters = _camera.getParameters();
+                Camera.Parameters parameters = getCameraParameters(_camera);
 
                 final boolean isCaptureModeStill = (_captureMode == RCTCameraModule.RCT_CAMERA_CAPTURE_MODE_STILL);
                 final boolean isCaptureModeVideo = (_captureMode == RCTCameraModule.RCT_CAMERA_CAPTURE_MODE_VIDEO);
@@ -304,7 +314,12 @@ class RCTCameraViewFinder extends TextureView implements TextureView.SurfaceText
                 return null;
             }
 
-            Camera.Size size = camera.getParameters().getPreviewSize();
+            Camera.Parameters parameters = getCameraParameters(camera);
+            if (parameters == null) {
+                return null;
+            }
+
+            Camera.Size size = parameters.getPreviewSize();
 
             int width = size.width;
             int height = size.height;
@@ -346,24 +361,27 @@ class RCTCameraViewFinder extends TextureView implements TextureView.SurfaceText
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // Get the pointer ID
-        Camera.Parameters params = _camera.getParameters();
-        int action = event.getAction();
+        Camera.Parameters params = getCameraParameters(_camera);
+        if (params != null) {
+            int action = event.getAction();
 
 
-        if (event.getPointerCount() > 1) {
-            // handle multi-touch events
-            if (action == MotionEvent.ACTION_POINTER_DOWN) {
-                mFingerSpacing = getFingerSpacing(event);
-            } else if (action == MotionEvent.ACTION_MOVE && params.isZoomSupported()) {
-                _camera.cancelAutoFocus();
-                handleZoom(event, params);
-            }
-        } else {
-            // handle single touch events
-            if (action == MotionEvent.ACTION_UP) {
-                handleFocus(event, params);
+            if (event.getPointerCount() > 1) {
+                // handle multi-touch events
+                if (action == MotionEvent.ACTION_POINTER_DOWN) {
+                    mFingerSpacing = getFingerSpacing(event);
+                } else if (action == MotionEvent.ACTION_MOVE && params.isZoomSupported()) {
+                    _camera.cancelAutoFocus();
+                    handleZoom(event, params);
+                }
+            } else {
+                // handle single touch events
+                if (action == MotionEvent.ACTION_UP) {
+                    handleFocus(event, params);
+                }
             }
         }
+
         return true;
     }
 
