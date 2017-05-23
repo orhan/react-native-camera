@@ -102,6 +102,7 @@ export default class Camera extends Component {
     onZoomChanged: PropTypes.func,
     mirrorImage: PropTypes.bool,
     fixOrientation: PropTypes.bool,
+    renderToHardwareTextureAndroid: PropTypes.bool,
     barCodeTypes: PropTypes.array,
     orientation: PropTypes.oneOfType([
       PropTypes.string,
